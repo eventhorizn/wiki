@@ -2,6 +2,10 @@
 
 * [Wiki](README.md)
 
+## Zeke Code Lessons
+
+* [Lesson One 'Hello World'](zeke-code-lessons/index.md)
+
 ## Personal
 
 * [Job Search](personal/jobsearch/README.md)
@@ -15,10 +19,6 @@
 ## AWS Innovate
 
 * [AWS Innovate 2018](aws-innovate/index.md)
-
-## Zeke Code Lessons
-
-* [Lesson One 'Hello World'](zeke-code-lessons/index.md)
 
 ## Gary Coding
 
