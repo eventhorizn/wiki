@@ -126,7 +126,7 @@ Cover and cook for an additional 30 minutes, until the zucchini and greens are t
 3. Stir in the lime juice, then serve, topped with tomatoes and any other toppings you like.
 ```
 
-[ttps://dizzybusyandhungry.com/brazilian-fish-stew/  ](ttps://dizzybusyandhungry.com/brazilian-fish-stew/  )
+{% embed url="https://dizzybusyandhungry.com/brazilian-fish-stew/" %}
 
 ```text
 1/4 cup lime juice

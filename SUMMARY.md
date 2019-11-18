@@ -15,6 +15,7 @@
   * [Current Job Applications](personal/jobsearch/index-3.md)
   * [Applications](personal/jobsearch/applications.md)
 * [Home Buying](personal/index.md)
+* [Recipes](personal/recipes.md)
 
 ## AWS Innovate
 
@@ -23,5 +24,4 @@
 ## Gary Coding
 
 * [VS Code Spring Tools](gary-coding/index.md)
-* [Recipes](recipes.md)
 
