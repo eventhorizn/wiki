@@ -23,4 +23,5 @@
 ## Gary Coding
 
 * [VS Code Spring Tools](gary-coding/index.md)
+* [Recipes](recipes.md)
 
