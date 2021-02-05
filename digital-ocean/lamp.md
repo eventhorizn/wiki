@@ -49,6 +49,8 @@ DO has a LAMP image on the marketplace, but I opted to manually build my stack
 ## Create Droplet
 
 1. I chose the Ubuntu droplet
+1. Make sure you click the IPv6 and Monitoring data checkboxes
+   - IPv6 will be for securing our apps later
 1. Create a SSH key
    - This is the public key you copied in the previous step
 1. Pick whichever settings make sense
@@ -190,6 +192,8 @@ DO has a LAMP image on the marketplace, but I opted to manually build my stack
    ```bash
    php -v
    ```
+1. If you're following the DO walkthrough, it then has you create virtual hosts and create a test app to test the stack
+   - Feel free to do so, but I'll have notes after installing PHPMyAdmin to do just that as well
 
 ## Install PHPMyAdmin
 
@@ -281,15 +285,20 @@ DO has a LAMP image on the marketplace, but I opted to manually build my stack
 1. Now when you access phpMyAdmin it will prompt you for a username and password
    - I didn't end up doing this step, as signing in as the db user is enough for my purposes
 
-# Kicking the Stack
+# Installing Apps
 
 So we've installed a bunch of stuff, but does it all play nice together?
+
+Our goal is to have a url route to an app:
+
+1. https://slotify.garyhake.dev
+1. https://taskapp.garyhake.dev
 
 We want to do a few things
 
 1. We need to set up a Domain
    - garyhake.dev for example
-   - Ain't free
+   - Ain't free, so needs to be bought
    - I ended up using google to buy my domain
 1. We want to set up virtual hosts on apache
    - This lets us host multiple sites
@@ -303,27 +312,208 @@ We want to do a few things
    - Pick your favorite and what'll save you the most money
    - domains.google is what I used
 1. I used custom name servers from Digital Ocean
+   - [DO Documentation](https://www.digitalocean.com/community/tutorials/how-to-point-to-digitalocean-nameservers-from-common-domain-registrars#registrar-google-domains)
    - This lets me manage my DNS from DO
      ![](images/name-server.png)
 1. Add your domain to DO
    - [Documentation](https://www.digitalocean.com/docs/networking/dns/how-to/add-domains/)
+   - Create > Domains/DNS
+   - Enter domain into name field and Add Domain
+     ![](images/do-domain.png)
 1. You've done all of this because you want to host an app
    - It requires a sub domain
    - [How to Add](https://www.digitalocean.com/docs/networking/dns/how-to/add-subdomain/)
      ![](images/subdomains.png)
+   - The key is you have two 'A' records and one 'AAAA' record
 1. To make sure this is working from this end
    - You need to check the DNS
    - [DNS Checker](https://dnschecker.org/#AAAA/taskapp.garyhake.dev)
+     ![](images/dns-propogation.png)
 1. This is just the start of getting an app running
+   - We know now that we can at least hit these urls when we get an app copied over to the server (at least over http)
+   - We aren't secured for https on the server yet
 
-## Set Up Apache Virtual Host
+## Set Up Apache Virtual Hosts
 
-1. [DO Documentation](https://www.digitalocean.com/community/tutorials/how-to-set-up-apache-virtual-hosts-on-ubuntu-18-04)
+[DO Documentation](https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-on-ubuntu-20-04#step-4-%E2%80%94-creating-a-virtual-host-for-your-website)
+
+1. Create the Directory Structure
+   ```bash
+   sudo mkdir /var/www/test.garyhake.dev
+   ```
+   - This is where site code goes
+1. Grant Permissions
+   ```bash
+   sudo chown -R $USER:$USER /var/www/test.garyhake.dev
+   ```
+   - Perms for www folder
+   ```bash
+   sudo chmod -R 755 /var/www
+   ```
+1. Create a configuration file
+   - This is how apache will server your site
+   ```bash
+   sudo nano /etc/apache2/sites-available/test.garyhake.dev
+   ```
+   - Copy the below into this file
+   ```bash
+   <VirtualHost *:80>
+      ServerName test.garyhake.dev
+      ServerAlias www.test.garyhake.dev
+      ServerAdmin webmaster@localhost
+      DocumentRoot /var/www/test.garyhake.dev
+      ErrorLog ${APACHE_LOG_DIR}/error.log
+      CustomLog ${APACHE_LOG_DIR}/access.log combined
+   </VirtualHost>
+   ```
+1. Enable your virtual host
+   ```bash
+   sudo a2ensite test.garyhake.dev
+   ```
+1. Disable deafult site that comes w/ apache
+   ```
+   sudo a2dissite 000-default
+   ```
+1. Test config file
+   ```bash
+   sudo apache2ctl configtest
+   ```
+1. Reload apache
+   ```
+   sudo systemctl reload apache2
+   ```
+1. Create Demo Page
+
+   ```bash
+   nano /var/www/test.garyhake.dev/index.html
+   ```
+
+   ```html
+   <html>
+   	<head>
+   		<title>test.garyhake.dev website</title>
+   	</head>
+   	<body>
+   		<h1>Hello World!</h1>
+
+   		<p>This is the landing page of <strong>test.garyhake.dev</strong>.</p>
+   	</body>
+   </html>
+   ```
+
+1. You can right now access this page w/ your ip address directly
+   - We don't have https security set up, so using our domain won't work just yet
+1. Final thing, change DirectoryIndex on apahce
+   - It will prefer index.html over index.php
+   - We want to switch that
+   ```
+   sudo nano /etc/apache2/mods-enabled/dir.conf
+   ```
+   - Move index.php to be first
+   - Reload apache
+   ```
+   sudo systemctl reload apache2
+   ```
 
 ## Securing Your Subdomains on Apache
 
-1. [DO Documentation](https://www.digitalocean.com/community/tutorials/how-to-secure-apache-with-let-s-encrypt-on-ubuntu-20-04)
-1. This will give your apps https
+[DO Documentation](https://www.digitalocean.com/community/tutorials/how-to-secure-apache-with-let-s-encrypt-on-ubuntu-20-04)
+
+- This will give your apps https
+
+1. Install certbot
+   ```
+   sudo apt install certbot python3-certbot-apache
+   ```
+1. The above walkthrough will have you setup a .conf file and allow https through the firewall
+   - This should all be done
+1. Optain ssl cert
+   ```
+   sudo certbot --apache
+   ```
+   - It will ask for valid email
+   - Ask to register for email list
+   - Will ask which sites you'd like to active https for
+   - Will ask to redirect http to https
+1. By default certbot does auto renewals of your ssl certs
+1. You should now be able to use your domain specified above and not use your ip address
+   - https://test.garyhake.dev
+
+## Testing PHP Processing
+
+1. Create new file named `info.php` inside custom web root
+
+   ```
+   nano /var/www/test.garyhake.dev/info.php
+   ```
+
+   - Copy the below code to it
+
+   ```php
+   <?php
+   phpinfo();
+   ```
+
+1. Save and close
+1. Navigate to https://test.garyhake.dev/info.php
+   ![](images/phpinfo.png)
+1. This will prove that apache is rendering php
+
+## Test Database Connection From PHP
+
+1. Create test database
+   ```
+   sudo mysql
+   ```
+   - Remember we are using the non root user
+   ```sql
+   CREATE DATABASE example_database;
+   ```
+1. Create todo_list table
+   ```sql
+   CREATE TABLE example_database.todo_list (
+      item_id INT AUTO_INCREMENT,
+      content VARCHAR(255),
+      PRIMARY KEY(item_id)
+   );
+   ```
+1. Insert some test data
+   ```sql
+   INSERT INTO example_database.todo_list (content) VALUES ("My first important item");
+   ```
+   - Run the above a few times w/ different data
+   ```sql
+   SELECT * FROM example_database.todo_list;
+   ```
+1. Create todo_list.php
+
+   ```php
+   nano /var/www/your_domain/todo_list.php
+   ```
+
+   ```php
+   <?php
+      $user = "gary";
+      $password = "password";
+      $database = "example_database";
+      $table = "todo_list";
+
+      try {
+      $db = new PDO("mysql:host=localhost;dbname=$database", $user, $password);
+      echo "<h2>TODO</h2><ol>";
+      foreach($db->query("SELECT content FROM $table") as $row) {
+         echo "<li>" . $row['content'] . "</li>";
+      }
+      echo "</ol>";
+      } catch (PDOException $e) {
+         print "Error!: " . $e->getMessage() . "<br/>";
+         die();
+      }
+   ```
+
+1. Navigate to https://test.garyhake.dev/todo_list.php
+
+   ![](images/test-todo.png)
 
 # Final Thoughts
 
@@ -332,3 +522,12 @@ We want to do a few things
 1. A core php app is actually easier to get working than a framework one
 1. CodeIgniter was a challenge to get running
 1. I need to add more notes on how I got my php apps running
+1. To get any app working, you need to follow the above steps
+   - Create subdomain in DO
+   - Create subdomain folder in apache
+   - Create conf file
+   - Enable the site in apache and restart
+1. You'll need to set up databases for your apps (phpmyadmin is your friend here)
+   - Make sure your connection info is updated when you copy apps over
+1. I'm manually moving app code over thru WinSCP
+   - It is possible to connect github thru apache
