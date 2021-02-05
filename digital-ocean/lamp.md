@@ -531,3 +531,69 @@ We want to do a few things
    - Make sure your connection info is updated when you copy apps over
 1. I'm manually moving app code over thru WinSCP
    - It is possible to connect github thru apache
+1. The php installation on apache may be missing extensions your apps need
+   - You need to make sure your app is in dev mode and reporting errors, or check logs
+   - php.ini will have settings to turn this on
+     - display_errors = on, error_reporting = on
+   - Your .env file will have a CI_ENVIRONMENT var
+   - Setting this to development will show server errors in the browser
+   - Turn to PRODUCTION when it's working!
+1. A note on CodeIgniter
+
+   - We are hiding the `index.php` from the url
+   - Requires us to add a .htaccess to our public folder
+   - We separate public code (css, js, index) from app code
+
+   ```
+   # Disable directory browsing
+   Options All -Indexes
+
+   # ----------------------------------------------------------------------
+   # Rewrite engine
+   # ----------------------------------------------------------------------
+
+   # Turning on the rewrite engine is necessary for the following rules and features.
+   # FollowSymLinks must be enabled for this to work.
+   <IfModule mod_rewrite.c>
+      Options +FollowSymlinks
+      RewriteEngine On
+
+      # If you installed CodeIgniter in a subfolder, you will need to
+      # change the following line to match the subfolder you need.
+      # http://httpd.apache.org/docs/current/mod/mod_rewrite.html#rewritebase
+      # RewriteBase /
+
+      # Redirect Trailing Slashes...
+      RewriteCond %{REQUEST_FILENAME} !-d
+      RewriteRule ^(.*)/$ /$1 [L,R=301]
+
+      # Rewrite "www.example.com -> example.com"
+      RewriteCond %{HTTPS} !=on
+      RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+      RewriteRule ^ http://%1%{REQUEST_URI} [R=301,L]
+
+      # Checks to see if the user is attempting to access a valid file,
+      # such as an image or css document, if this isn't true it sends the
+      # request to the front controller, index.php
+      RewriteCond %{REQUEST_FILENAME} !-f
+      RewriteCond %{REQUEST_FILENAME} !-d
+      RewriteRule ^([\s\S]*)$ index.php/$1 [L,NC,QSA]
+
+      # Ensure Authorization header is passed along
+      RewriteCond %{HTTP:Authorization} .
+      RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+   </IfModule>
+
+   <IfModule !mod_rewrite.c>
+      # If we don't have mod_rewrite installed, all 404's
+      # can be sent to index.php, and everything works as normal.
+      ErrorDocument 404 index.php
+   </IfModule>
+
+   # Disable server signature start
+      ServerSignature Off
+   # Disable server signature end
+   ```
+
+   - This is the .htaccess file I created to get it working
+   - Was a pain to figure out
