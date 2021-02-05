@@ -163,6 +163,33 @@ DO has a LAMP image on the marketplace, but I opted to manually build my stack
    - I vote no, it causes issues w/ phpMyAdmin later
    - Press Y and enter at each prompt
      - Removes anonymous users and the test db
+1. Test msql is working
+   ```bash
+   sudo mysql
+   ```
+   - You should see a 'Welcome to MySQL' result
+   - Type exit to...exit
+1. Create non root user
+   ```sql
+   CREATE USER 'gary'@'localhost' IDENTIFIED BY 'password';
+   ```
+   ```sql
+   GRANT ALL PRIVILEGES ON * . * TO 'gary'@'localhost';
+   ```
+1. The recommendation is to do a separate user per database
+   - If you're lazy like me...you just do one
+   - I'd use root if it wasn't frowned upon
+
+### Install PHP
+
+1. The easiest of the bunch
+   ```bash
+   sudo apt install php libapache2-mod-php php-mysql
+   ```
+1. Check it installed
+   ```bash
+   php -v
+   ```
 
 ## Install PHPMyAdmin
 
@@ -253,3 +280,55 @@ DO has a LAMP image on the marketplace, but I opted to manually build my stack
 
 1. Now when you access phpMyAdmin it will prompt you for a username and password
    - I didn't end up doing this step, as signing in as the db user is enough for my purposes
+
+# Kicking the Stack
+
+So we've installed a bunch of stuff, but does it all play nice together?
+
+We want to do a few things
+
+1. We need to set up a Domain
+   - garyhake.dev for example
+   - Ain't free
+   - I ended up using google to buy my domain
+1. We want to set up virtual hosts on apache
+   - This lets us host multiple sites
+1. Set up test database and test php files
+   - Lets us test that apache can call php
+   - Lets us test that php can connect and get info from mysql
+
+## Domain Registration
+
+1. There's lots of places to buy a domain
+   - Pick your favorite and what'll save you the most money
+   - domains.google is what I used
+1. I used custom name servers from Digital Ocean
+   - This lets me manage my DNS from DO
+     ![](images/name-server.png)
+1. Add your domain to DO
+   - [Documentation](https://www.digitalocean.com/docs/networking/dns/how-to/add-domains/)
+1. You've done all of this because you want to host an app
+   - It requires a sub domain
+   - [How to Add](https://www.digitalocean.com/docs/networking/dns/how-to/add-subdomain/)
+     ![](images/subdomains.png)
+1. To make sure this is working from this end
+   - You need to check the DNS
+   - [DNS Checker](https://dnschecker.org/#AAAA/taskapp.garyhake.dev)
+1. This is just the start of getting an app running
+
+## Set Up Apache Virtual Host
+
+1. [DO Documentation](https://www.digitalocean.com/community/tutorials/how-to-set-up-apache-virtual-hosts-on-ubuntu-18-04)
+
+## Securing Your Subdomains on Apache
+
+1. [DO Documentation](https://www.digitalocean.com/community/tutorials/how-to-secure-apache-with-let-s-encrypt-on-ubuntu-20-04)
+1. This will give your apps https
+
+# Final Thoughts
+
+1. This is an invovled process
+   - Google is your friend
+1. A core php app is actually easier to get working than a framework one
+1. CodeIgniter was a challenge to get running
+1. I need to add more notes on how I got my php apps running
