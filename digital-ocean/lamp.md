@@ -353,7 +353,7 @@ We want to do a few things
 1. Create a configuration file
    - This is how apache will server your site
    ```bash
-   sudo nano /etc/apache2/sites-available/test.garyhake.dev
+   sudo nano /etc/apache2/sites-available/test.garyhake.dev.conf
    ```
    - Copy the below into this file
    ```bash
