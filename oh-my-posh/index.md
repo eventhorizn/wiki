@@ -23,7 +23,15 @@
    Import-Module oh-my-posh
    Set-PoshPrompt -Theme paradox
    ```
-1. json for the theme I'm using:
+1. Terminal Icons
+   ```ps1
+   Install-Module -Name Terminal-Icons -Repository PSGallery
+   ```
+   - Add to profile
+   ```ps1
+   Import-Module -Name Terminal-Icons
+   ```
+3. json for the theme I'm using:
 
    ```json
    {
